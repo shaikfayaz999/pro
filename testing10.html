@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timetable Management</title>
+    <link rel="stylesheet" href="styles8.css" />
+    <!-- Inline styles for menu, popups, and header links -->
+    <style>
+      /* Container for absolute positioning */
+      .container {
+        position: relative;
+        padding-top: 40px;
+      }
+      /* Hamburger menu */
+      .menu-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+      }
+      .menu-toggle {
+        
+        color: #000000;
+        font-size: 24px;
+        border: none;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+      }
+      .menu-toggle:hover {
+        background-color: rgba(246, 246, 246, 0.8);
+      }
+      .menu-items {
+        margin-top: 8px;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .menu-btn {
+        background-color: #6b8de3;
+        color: #000;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+      .menu-btn .button-icon {
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+      }
+      /* Header nav links */
+      .nav-links a {
+        color: #fff;
+        text-decoration: none;
+        margin: 0 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .nav-links a:hover { opacity: 0.8; }
+      /* Popup overlay and content */
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      .popup-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 6px;
+        position: relative;
+        max-width: 90%;
+      }
+      .popup-content h3 { margin-top: 0; }
+      .popup-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="logo">
+        <img src="icon.png" alt="Logo" class="logo-icon" />
+        University Timetable
+      </div>
+      <nav class="nav-links">
+        <a href="first.html">Home</a>
+        <a onclick="openAboutPopup()">About</a>
+        <a onclick="openContactPopup()">Contact</a>
+      </nav>
+    </header>
+
+    <div class="container">
+      <!-- Hamburger Menu -->
+      <div class="menu-container">
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        <div id="menuItems" class="menu-items">
+          <button class="menu-btn" onclick="openAddSubjectPopup()">
+            Add Subject <img src="plus.png" alt="Plus" class="button-icon" />
+          </button>
+          <button class="menu-btn" onclick="goToCT2()">
+            Add Class <img src="plus.png" alt="Plus" class="button-icon" />
+          </button>
+          <button class="menu-btn" onclick="goToCT3()">
+            View Timetable <img src="signin.png" alt="View" class="button-icon" />
+          </button>
+        </div>
+      </div>
+
+      <h2>Manage Timetable</h2>
+
+      <!-- Popups -->
+      <div id="addSubjectPopup" class="popup-overlay">
+        <div class="popup-content">
+          <button class="popup-close" onclick="closeAddSubjectPopup()">×</button>
+          <h3>Add New Subject</h3>
+          <input type="text" id="subjectName" placeholder="Enter Subject Name" class="popup-input" />
+          <div class="popup-buttons">
+            <button onclick="saveSubject()" class="popup-save-btn">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="aboutPopup" class="popup-overlay">
+        <div class="popup-content">
+          <button class="popup-close" onclick="closeAboutPopup()">×</button>
+          <h3>About This Page</h3>
+          <p>This application helps manage university timetables by adding subjects and classes, then viewing the schedule in one place.</p>
+        </div>
+      </div>
+
+      <div id="contactPopup" class="popup-overlay">
+        <div class="popup-content">
+          <button class="popup-close" onclick="closeContactPopup()">×</button>
+          <h3>Contact Details</h3>
+          <p>Name: Your Name<br />Email: youremail@example.com<br />Phone: +91-1234567890</p>
+        </div>
+      </div>
+
+      <!-- Timetable Table -->
+      <table id="timetable">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Subject</th>
+            <th>Faculty</th>
+            <th>Room</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+
+      <div class="footer">
+        <button class="back-btn" onclick="window.history.back()">
+          <img src="back.png" alt="Back" class="button-icon left" /> Back
+        </button>
+        <button class="save-btn" onclick="saveTimetable()">Save</button>
+      </div>
+    </div>
+
+    <script>
+      // Toggle menu visibility
+      function toggleMenu() {
+        const menu = document.getElementById('menuItems');
+        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+      }
+      // Close menu when clicking outside
+      document.addEventListener('click', e => {
+        const menu = document.getElementById('menuItems');
+        const toggle = document.querySelector('.menu-toggle');
+        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+          menu.style.display = 'none';
+        }
+      });
+      // Popup handlers
+      function openAddSubjectPopup() { document.getElementById('addSubjectPopup').style.display='flex'; }
+      function closeAddSubjectPopup() { document.getElementById('addSubjectPopup').style.display='none'; }
+      function openAboutPopup() { document.getElementById('aboutPopup').style.display='flex'; }
+      function closeAboutPopup() { document.getElementById('aboutPopup').style.display='none'; }
+      function openContactPopup() { document.getElementById('contactPopup').style.display='flex'; }
+      function closeContactPopup() { document.getElementById('contactPopup').style.display='none'; }
+      // Timetable functions (unchanged)
+      function getQueryParams() { const p=new URLSearchParams(window.location.search); return { semester:p.get('semester'),section:p.get('section')} }
+      function saveSubject() { /* unchanged from prior code */ const name=document.getElementById('subjectName').value.trim(); if(!name)return alert('Enter subject');fetch('save_subject.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({subject_name:name,semester:getQueryParams().semester,section:getQueryParams().section})}).then(r=>r.text()).then(m=>{alert(m);closeAddSubjectPopup();loadTimetable()}).catch(()=>alert('Fail')); }
+      function loadTimetable(){ const{semester,section}=getQueryParams();fetch(`fetch_classes.php?semester=${encodeURIComponent(semester)}&section=${encodeURIComponent(section)}`).then(r=>r.json()).then(data=>{const t=document.getElementById('tableBody');t.innerHTML='';data.forEach(rw=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${rw.day}</td><td>${rw.time}</td><td>${rw.subject}</td><td>${rw.faculty}</td><td>${rw.room}</td><td><button onclick="deleteClass(${rw.id})">🗑️</button></td>`;t.appendChild(tr);});});}
+      function deleteClass(id){ if(!confirm('Delete?'))return;fetch('delete_class.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}).then(r=>r.text()).then(m=>{alert(m);loadTimetable()});}
+      function saveTimetable(){const rows=[...document.querySelectorAll('#tableBody tr')];const tbl=rows.map(r=>{const c=r.querySelectorAll('td');return{day:c[0].innerText,time:c[1].innerText,subject:c[2].innerText,faculty:c[3].innerText,room:c[4].innerText};});if(!tbl.length)return alert('No data');fetch('save_timetable.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({semester:getQueryParams().semester,section:getQueryParams().section,timetable:tbl})}).then(r=>r.text()).then(m=>alert(m));}
+      function goToCT2(){const{semester,section}=getQueryParams();window.location.href=`hodCT2.html?semester=${encodeURIComponent(semester)}&section=${encodeURIComponent(section)}`;}
+      function goToCT3(){const{semester,section}=getQueryParams();window.location.href=`hodCT3.html?semester=${encodeURIComponent(semester)}&section=${encodeURIComponent(section)}`;}
+      // Initial load
+      window.onload = ()=>{ loadTimetable(); };
+    </script>
+  </body>
+</html>
